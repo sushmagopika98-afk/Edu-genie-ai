@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>EduGenie - AI Learning Assistant</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+            background: #f2f5fc;
+            color: #243047;
+        }
+
+        header {
+            text-align: center;
+            padding: 25px 10px;
+        }
+
+        header h1 {
+            color: #4b55b8;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #63708a;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .module {
+            background: white;
+            padding: 22px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.07);
+        }
+
+        h2 {
+            color: #454eaa;
+            margin-top: 0;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #cbd2e1;
+            border-radius: 7px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        button {
+            background: #515cc2;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #39449f;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .output {
+            display: none;
+            margin-top: 18px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f1f3ff;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+
+        .error {
+            background: #fff0f0;
+            color: #a12828;
+        }
+
+        footer {
+            text-align: center;
+            color: #778097;
+            margin: 30px 0 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🎓 Welcome to EduGenie</h1>
+        <p>Your Personal AI Tutor for Learning Support</p>
+    </header>
+
+    <main class="container">
+
+        <!-- Q&A -->
+        <section class="module">
+            <h2>💬 Ask EduGenie</h2>
+            <form id="qaForm">
+                <label for="question">
+                    Ask any question
+                </label>
+                <input
+                    type="text"
+                    id="question"
+                    placeholder="Why is the sky blue?"
+                    required
+                >
+                <button type="submit">Get Answer</button>
+            </form>
+            <div id="qaResult" class="output"></div>
+        </section>
+
+        <!-- Explanation -->
+        <section class="module">
+            <h2>📘 Topic Explanation</h2>
+            <form id="explainForm">
+                <label for="topic">
+                    Enter a topic to understand
+                </label>
+                <input
+                    type="text"
+                    id="topic"
+                    placeholder="Photosynthesis"
+                    required
+                >
+                <button type="submit">Explain</button>
+            </form>
+            <div id="explanationResult" class="output"></div>
+        </section>
+
+        <!-- Summary -->
+        <section class="module">
+            <h2>📝 Text Summarizer</h2>
+            <form id="summaryForm">
+                <label for="summaryText">
+                    Paste the text you want to summarize
+                </label>
+                <textarea
+                    id="summaryText"
+                    placeholder="Paste your paragraph here..."
+                    required
+                ></textarea>
+                <button type="submit">Summarize</button>
+            </form>
+            <div id="summaryResult" class="output"></div>
+        </section>
+
+        <!-- Quiz -->
+        <section class="module">
+            <h2>🧠 Quiz Generator</h2>
+            <form id="quizForm">
+                <label for="quizText">
+                    Enter text or a topic for a quiz
+                </label>
+                <textarea
+                    id="quizText"
+                    placeholder="Enter learning material here..."
+                    required
+                ></textarea>
+                <button type="submit">Generate Quiz</button>
+            </form>
+            <div id="quizResult" class="output"></div>
+        </section>
+
+        <!-- Learning Recommendations -->
+        <section class="module">
+            <h2>🚀 Learning Recommendations</h2>
+            <form id="learnForm">
+                <label for="learnTopic">
+                    What do you want to learn?
+                </label>
+                <input
+                    type="text"
+                    id="learnTopic"
+                    placeholder="Python programming"
+                    required
+                >
+                <button type="submit">Get Recommendations</button>
+            </form>
+            <div id="learnResult" class="output"></div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>EduGenie © 2026 | Learn Smarter with AI 🎓</p>
+    </footer>
+
+    <script>
+        // Display output safely as text
+        function showResult(elementId, data, isError = false) {
+            const output = document.getElementById(elementId);
+            output.style.display = "block";
+            output.classList.toggle("error", isError);
+
+            if (typeof data === "string") {
+                output.textContent = data;
+            } else {
+                output.textContent = JSON.stringify(data, null, 2);
+            }
+        }
+
+        // Handle API requests
+        async function sendRequest(url, method, body = null) {
+            const options = { method };
+
+            if (body !== null) {
+                options.headers = {
+                    "Content-Type": "application/json"
+                };
+                options.body = JSON.stringify(body);
+            }
+
+            const response = await fetch(url, options);
+            const raw = await response.text();
+
+            let data;
+            try {
+                data = JSON.parse(raw);
+            } catch {
+                data = raw;
+            }
+
+            if (!response.ok) {
+                const detail = typeof data === "object"
+                    ? (data.detail || data.error || JSON.stringify(data))
+                    : data;
+
+                throw new Error(
+                    `HTTP ${response.status}: ${detail}`
+                );
+            }
+
+            if (data && typeof data === "object" && data.error) {
+                throw new Error(data.error);
+            }
+
+            return data;
+        }
+
+        // Attach a handler to each form
+        function setupForm(formId, resultId, getRequest) {
+            const form = document.getElementById(formId);
+            const button = form.querySelector("button");
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                button.disabled = true;
+                button.textContent = "Please wait...";
+                showResult(resultId, "Generating response...");
+
+                try {
+                    const { url, method, body } = getRequest();
+                    const data = await sendRequest(url, method, body);
+
+                    const result = data.answer
+                        ?? data.explanation
+                        ?? data.summary
+                        ?? data.quiz
+                        ?? data.recommendation
+                        ?? data;
+
+                    showResult(resultId, result);
+                } catch (error) {
+                    showResult(
+                        resultId,
+                        error.message || "Something went wrong.",
+                        true
+                    );
+                } finally {
+                    button.disabled = false;
+                    button.textContent = form.dataset.buttonText;
+                }
+            });
+
+            form.dataset.buttonText = button.textContent;
+        }
+
+        // Q&A
+        setupForm("qaForm", "qaResult", () => {
+            const question =
+                document.getElementById("question").value.trim();
+
+            return {
+                url: "/qa?question=" + encodeURIComponent(question),
+                method: "GET"
+            };
+        });
+
+        // Explanation
+        setupForm("explainForm", "explanationResult", () => ({
+            url: "/explain/",
+            method: "POST",
+            body: {
+                topic: document.getElementById("topic").value.trim()
+            }
+        }));
+
+        // Summary
+        setupForm("summaryForm", "summaryResult", () => ({
+            url: "/summarize/",
+            method: "POST",
+            body: {
+                text: document.getElementById("summaryText").value.trim()
+            }
+        }));
+
+        // Quiz
+        setupForm("quizForm", "quizResult", () => ({
+            url: "/quiz/",
+            method: "POST",
+            body: {
+                text: document.getElementById("quizText").value.trim()
+            }
+        }));
+
+        // Learning Recommendations
+        setupForm("learnForm", "learnResult", () => {
+            const topic =
+                document.getElementById("learnTopic").value.trim();
+
+            return {
+                url: "/learn/recommendations?topic="
+                    + encodeURIComponent(topic),
+                method: "GET"
+            };
+        });
+    </script>
+</body>
+</html>
