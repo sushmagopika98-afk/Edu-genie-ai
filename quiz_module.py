@@ -9,13 +9,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set up Gemini client
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key)
+
 
 def clean_json_block(text):
     # Remove Markdown code fences
     return re.sub(r"```(?:json)?\s*|\s*```", "", text).strip()
+
 
 def generate_quiz(text: str) -> list:
     try:
@@ -42,7 +43,7 @@ Passage:
 """
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3.8-flash",
             contents=prompt
         )
 
@@ -58,4 +59,5 @@ Passage:
         return quiz
 
     except Exception as e:
+        print(f"Quiz error: {e}")
         return [{"error": f"⚠️ Error in Quiz: {e}"}]
