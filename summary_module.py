@@ -16,7 +16,7 @@ def summarize_text(text: str) -> str:
         prompt = f"Summarize the following text in simple language:\n\n{text}"
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3.8-flash",
             contents=prompt
         )
 
